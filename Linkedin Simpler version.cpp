@@ -6,8 +6,8 @@
 using namespace std;
 
 ///////////////////////////////////////// LINKEDIN - DSA PROJECT /////////////////////////////////////////
-//------------------------------------- Author : SYED FAISAL ABRAR --------------------------------------
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//------------------------------------- Author : SYED FAISAL ABRAR ---------------------------------------
+///////////////////////////////////////////// IN PROGRESS   ///////////////////////////////////////////////
 class ConnectNode{
 
     ConnectNode* left;
@@ -93,6 +93,8 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 class UserDetails{
     string name;
     int age;
@@ -124,6 +126,7 @@ class MessageNode{
     string message;
     string from;
     MessageNode* next;
+    MessageNode* prev;
 public:
     MessageNode(): message(""), from(""),next(NULL){}
     MessageNode(string message, string from ):message(this->message),from(this->from) ,next(NULL){}
@@ -137,6 +140,9 @@ public:
     void setNext(MessageNode* nxt){
         this->next = nxt;
     }
+    void setPrev(MessageNode* prv){
+        this->prev = prv;
+    }
     string getMessage(){
         return message;
     }
@@ -146,97 +152,118 @@ public:
     MessageNode* getNext(){
         return next;
     }
+    MessageNode* getPrev(){
+        return prev;
+    }
 
 };
 class Inbox{
-    MessageNode* front;
-    MessageNode* rear;
-
+    MessageNode* head;
+    MessageNode* tail;
+    LinkedInProfiles* pro;
 public:
 
-    Inbox(): front(NULL), rear(NULL){}
-    
-    void addMessage(Inbox* inbox, string msg, string from){
+    Inbox(): head(NULL), tail(NULL){}
+    void addMessage(string msg, string from){
 
         MessageNode* NewMsg = new MessageNode(msg, from);
 
-        if(front == NULL)
-            inbox->front = NewMsg;
+        if(head == NULL){
+                head = NewMsg;
+                tail = NewMsg;
+            }
         else    
-            inbox->rear->setNext(NewMsg);
-        
-        inbox->rear = NewMsg;
-        inbox->rear->setNext(front);    
+        {
+            MessageNode* temp = tail;
+            tail->setNext(NewMsg);
+            NewMsg->setPrev(tail);
+            tail = NewMsg;
+        }  
     }
-    bool checkUser(string from){
-        ifstream read;
-        read.open("LinkedIn_Users.txt");
+    // pro->searchByName(from);
+    
+    void deleteMessage(MessageNode* inboxHead, string from){
 
-        if(read.is_open())
-            return false;
-        else{
-
-        }
-    }
-    void deleteMessage(Inbox* inbox, string from){
-
-        if(inbox->front == NULL){
-            cout<<"Inbox is Empty.."<<endl;
-        }
-
-        if(inbox->front == inbox->rear){
-            
-            inbox->front= NULL;
-            inbox->rear= NULL;
+        if(inboxHead == NULL){
+            cout<<"Inbox Is Empty!"<<endl;
         }
         else{
+            MessageNode* head = inboxHead;
+            while(head != NULL){
 
-            MessageNode* temp = inbox->front;
-
-            inbox->front = inbox->front->getNext();
-            inbox->rear->setNext(inbox->front);
-            delete temp;
+                if(head->getFrom() == from){
+                    MessageNode* temp = head->getNext();
+                    head->setNext(head->getNext()->getNext());
+                    head->getNext()->setPrev(head);
+                    delete temp;
+                    break;
+                }
+                else
+                    head = head->getNext();
+            }
         }
-        
     }
 
-    void displayAllMessages(Inbox* inbox){
-        if(inbox->front != NULL){
+    void displayAllMessages(){
+        if(head == NULL){
             cout<<"Inbox is Empty.."<<endl;
         }
         else{
-            MessageNode* temp = inbox->front;
-            while(temp->getNext() != inbox->front){
+
+            MessageNode* temp = head;
+            while(temp != NULL){
 
                 cout<<"**** ______________________________________________________________________****"<<endl;
                 cout<<"________From : "<<temp->getFrom()<<"_______________________________________"<<endl;
                 cout<<"Message : _________________________________________________________________"<<endl;
                 cout<<temp->getMessage()<<endl;
                 cout<<"___________________________________________________________________________"<<endl;
+
                 temp = temp->getNext();
             }
-            cout<<"**** ______________________________________________________________________****"<<endl;
-            cout<<"________From : "<<temp->getFrom()<<"_______________________________________"<<endl;
-            cout<<"Message : _________________________________________________________________"<<endl;
-            cout<<temp->getMessage()<<endl;
-            cout<<"___________________________________________________________________________"<<endl;
+        }
+
+        int choice=0;
+        cout<<"Press 1 if you want to go to User Profile , and 0 to exit : ";
+        cin>>choice;
+        while(1){
+            if(choice == 1)
+                {
+                    string userName = "";
+                    cout<<"  Enter User Name from Above to Search : ";
+                    cin>>userName;
+
+                    //Searching User In Hash Table......................
+                    pro->searchByName(userName);
+                    break;
+                }
+            else if(choice == 0)
+                break;
+            else{
+                cout<<"_____________________________ Invalid Choice Entered _________________________________"<<endl;
+                continue;
+            }
         }
     }
 
 };
 
 class Message{
-    Inbox ibox;
-    string messageBody;
-    
+
 public:
-    Message(): messageBody(""){}
-    Message( string messageBody){
-        this->messageBody= messageBody;
+    Inbox ibox;
+    
+    Message(){}
+    
+    void sendMessage(string message, UserProfile &to){
+        if(message != ""){
+            to.msg.ibox.addMessage(message, to.user.getName());
+        }
+        else{
+            cout<<"Can't Send.Message Body Is Empty!"<<endl;
+        }
     }
-    void sendMessage(string meassage, UserProfile &to){
-        
-    }
+    
 
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,17 +284,74 @@ class Certification{
 public:
 
 };
+//////////////////////////////////////////////////////////////////////////////////////////////////
+class pNode{
+    string publisher;
+    string content;
+    double postId;
+    pNode* next;
+public:
+    pNode():publisher(""), content(""), postId(0){next=NULL;}
+    pNode(string pub, string cont, double ID):publisher(pub), content(cont), postId(ID){next=NULL;}
 
+    string getPublisher(){return publisher;}
+    string getContent(){return content;}
+    double getID(){return postId;}
+
+    void setNext(pNode* n){
+        next = n;
+    }
+    pNode* getNext(){return next;}
+};
+class Posts{
+    pNode **postArray;
+    int size;
+    pNode* pn;
+    LinkedInPosts* linkPost;
+public:
+    Posts():size(0){}
+    Posts(int size): size(size){
+            //Filling empty array with NULL, just for Operational purpose
+        for(int i=0; i<size;i++){
+            postArray[i] = NULL;
+        }
+    }
+        int HashFunction(int key, int size){
+        return key%size;
+    }
+    void createPost(string publisher, string content, double postId){
+        //rehashing occurs when size reaches to 85% of it self.
+        if(size == (size/100)*85)
+            size = size + ((size/100)*25);
+        
+        int hashIndex = HashFunction(postId, size);
+        pNode* temp = postArray[hashIndex];
+        if(temp == NULL)
+            temp = new pNode(publisher, content,  postId);
+        else{    
+            while(temp!= NULL)
+                temp = temp->getNext();
+            temp->setNext(new pNode(publisher, content,  postId));
+        }
+        linkPost->postToDatabase(publisher, content, postId);
+    }
+
+    void displayPosts(){
+
+    }
+    
+};
 class UserProfile{
 
+public:
     Message msg;
     UserDetails user;
     Certification certif;
     Job job;
     JobHistory jobHist;
+    Posts post;
     LinkedInProfiles* linkedinProfiles; 
 
-public:
     UserProfile(){}
     UserProfile(string name, int age, char gender, string email, double userId) 
                 : user(name, age, gender, email, userId){}
@@ -281,6 +365,7 @@ public:
     void dashBoard(){
 
     }
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,14 +391,14 @@ public:
 };
 
 class LinkedInProfiles{
-    UserNode **arr;
+    UserNode **ProfileArr;
     int size;
 public:
     LinkedInProfiles(){}
     LinkedInProfiles(int size): size(size){
         //Filling empty array with NULL, just for Operational purpose
         for(int i=0; i<size;i++){
-            arr[i] = NULL;
+            ProfileArr[i] = NULL;
         }
     }
 
@@ -328,7 +413,7 @@ public:
             size = size + ((size/100)*25);
         
         int hashIndex = HashFunction(ID, size);
-        UserNode* temp = arr[hashIndex];
+        UserNode* temp = ProfileArr[hashIndex];
         if(temp == NULL)
             temp = new UserNode(name, age, gender, email, ID);
         else{    
@@ -339,24 +424,159 @@ public:
     }
 
     UserNode* searchById(double ID){
-        return arr[0];
+        return ProfileArr[0];
     }
 
+    void searchByName(string name){
 
+    }
+
+};
+/////////////////////////////////////////////////////////////////////////////////////////////
+class postsNode{
+    string publisher;
+    string content;
+    double ID;
+    postsNode* next;
+public:
+    postsNode(){}
+    postsNode(string pub, string content, double postID) 
+        : publisher(pub), content(content), ID(postID){next=NULL;}
+    string getPublisher(){
+        return publisher;
+    }
+    string getContent(){
+        return content;
+    }
+    double getPostId(){
+        return ID;
+    }
+    postsNode* getNext(){
+        return next;
+    }
+    void setNext(postsNode* n){next = n;}
 };
 class LinkedInPosts{
 
+    postsNode **PostsArr;
+    int size;
 public:
+    LinkedInPosts(){}
+    LinkedInPosts(int size): size(size){
+        //Filling empty array with NULL, just for Operational purpose
+        for(int i=0; i<size;i++){
+            PostsArr[i] = NULL;
+        }
+    }
 
+    int HashFunction(int key, int size){
+        return key%size;
+    }
+
+    void postToDatabase(string publisher, string content, double postID){
+
+        //rehashing occurs when size reaches to 85% of it self.
+        if(size == (size/100)*85)
+            size = size + ((size/100)*25);
+        
+        int hashIndex = HashFunction(postID, size);
+        postsNode* temp = PostsArr[hashIndex];
+        if(temp == NULL)
+            temp = new postsNode(publisher, content, postID);
+        else{    
+            while(temp!= NULL)
+                temp = temp->getNext();
+            temp->setNext(new postsNode(publisher, content, postID));
+        }
+    }
+
+    postsNode* searchById(double ID){
+        postsNode* required = PostsArr[int(ID)];
+
+        while(required != NULL){
+            if(required->getPostId() == ID){
+                return required;
+            }
+            else
+                required->getNext();
+        }
+
+        return NULL;
+    }
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class jobsNode{
+    string publisher;
+    string content;
+    double ID;
+    jobsNode* next;
+public:
+    jobsNode(){}
+    jobsNode(string pub, string content, double postID) 
+        : publisher(pub), content(content), ID(postID){next=NULL;}
+    string getPublisher(){
+        return publisher;
+    }
+    string getContent(){
+        return content;
+    }
+    double getJobId(){
+        return ID;
+    }
+    jobsNode* getNext(){
+        return next;
+    }
+    void setNext(jobsNode* n){next = n;}
+};
 class LinkedInJobs{
-
+jobsNode **JobsArr;
+    int size;
 public:
+    LinkedInJobs(){}
+    LinkedInJobs(int size): size(size){
+        //Filling empty array with NULL, just for Operational purpose
+        for(int i=0; i<size;i++){
+            JobsArr[i] = NULL;
+        }
+    }
 
+    int HashFunction(int key, int size){
+        return key%size;
+    }
+
+    void postToDatabase(string publisher, string content, double postID){
+
+        //rehashing occurs when size reaches to 85% of it self.
+        if(size == (size/100)*85)
+            size = size + ((size/100)*25);
+        
+        int hashIndex = HashFunction(postID, size);
+        jobsNode* temp = JobsArr[hashIndex];
+        if(temp == NULL)
+            temp = new jobsNode(publisher, content, postID);
+        else{    
+            while(temp!= NULL)
+                temp = temp->getNext();
+            temp->setNext(new jobsNode(publisher, content, postID));
+        }
+    }
+
+    jobsNode* searchById(double ID){
+        jobsNode* required = JobsArr[int(ID)];
+
+        while(required != NULL){
+            if(required->getJobId() == ID){
+                return required;
+            }
+            else
+                required->getNext();
+        }
+        return NULL;
+    }
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class LinkedIn{
 
     LinkedInProfiles* linkedinProfiles;
@@ -377,7 +597,7 @@ public:
             LoggedIn.dashBoard();
         }
     }
-
+    
     
 };
 
