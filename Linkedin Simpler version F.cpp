@@ -8,6 +8,22 @@ using namespace std;
 ///////////////////////////////////////// LINKEDIN - DSA PROJECT /////////////////////////////////////////
 //------------------------------------- Author : SYED FAISAL ABRAR ---------------------------------------
 ///////////////////////////////////////////// IN PROGRESS   ///////////////////////////////////////////////
+
+class UserProfile;
+class Message;
+class UserDetails;
+class Certification;
+class Job;
+class Posts;
+class LinkedInProfiles;
+class LinkedIn;
+class UserNode;
+class LinkedInPosts;
+class LinkedInJobs;
+class ConnectNode;
+class Connections;
+class MessageNode;
+
 class ConnectNode{
 
     ConnectNode* left;
@@ -32,6 +48,9 @@ public:
 class Connections{
     LinkedInProfiles* profiles;
     ConnectNode* root;
+    UserNode* uNode;
+    UserProfile user;
+
 public:
         Connections():root(NULL){}
         
@@ -78,8 +97,8 @@ public:
                     cin>>enteredId;
 
                     //Searching User In Hash Table......................
-                    UserNode* uNode = profiles->searchById(enteredId);
-                    UserProfile user = uNode->getUser();
+                    uNode = profiles->searchById(enteredId);
+                    user = uNode->getUser();
                     user.displayData();
                     break;
                 }
@@ -121,7 +140,7 @@ public:
     void setEmail(string email){this->email = email;}
     void setUserId(double id){this->userId = id;}
 };
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////// message ///////////////////////////////////////////////////////////
 class MessageNode{
     string message;
     string from;
@@ -161,6 +180,7 @@ class Inbox{
     MessageNode* head;
     MessageNode* tail;
     LinkedInProfiles* pro;
+
 public:
 
     Inbox(): head(NULL), tail(NULL){}
@@ -224,7 +244,7 @@ public:
         }
 
         int choice=0;
-        cout<<"Press 1 if you want to go to User Profile , and 0 to exit : ";
+        cout<<"Press 1 if you want to go to Sender Profile , and 0 to exit : ";
         cin>>choice;
         while(1){
             if(choice == 1)
@@ -267,32 +287,143 @@ public:
 
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+class jNode{
+    string author;
+    string jobCriteria;
+    double jID;
+    jNode* next;
+    jNode* prev;
+public:
+    jNode():author(""),jobCriteria("") {next = NULL; prev = NULL;}
+    jNode(string auth, string jcret, double jid):author(auth),jobCriteria(jcret),jID(jid) {next = NULL; prev = NULL;}
+
+    string getAuthor(){return author;}
+    string getjobCriteria(){return jobCriteria;}
+    jNode* getNext(){return next;}
+    jNode* getPrev(){return prev;}
+
+    void setAuthor(string auth){author = auth;}
+    void setJobCriteria(string jobCri){jobCriteria = jobCri;}
+    void setNext(jNode* n){next = n;}
+    void setPrev(jNode* p){prev = p;}
+};
 class Job{
-    LinkedInJobs lJobs;
-public:
 
+    jNode* head;
+    jNode* tail;
+    LinkedInJobs* lJobs;
+public:
+    Job(): head(NULL), tail(NULL){};
+
+    //Active job posts by User (in profile)................
+    void createJobPost(string author, string jobCri, double jID){
+        jNode* post = new jNode(author, jobCri,jID);
+
+        if(head == NULL){
+            head = post;
+            tail = post;
+        }
+        else{
+            tail->setNext(post);
+            post->setPrev(tail);
+            tail = post;
+        }   
+
+        //Also post this jOB to LINKEDIN............................
+        lJobs->postToDatabase(author, jobCri, jID);
+    }
+    void allJobsPosted(){
+        jNode* temp = head;
+        if(temp ==NULL)
+            cout<<"User has no Job Post Active!.."<<endl;
+        else{
+            
+            int i=0;
+            while(temp!= NULL){
+                i++;
+                cout<<"___________________________________________________________________________"<<endl;
+                cout<<i<<". "<<temp->getAuthor() <<endl<<endl;
+                cout<<"   "<<temp->getjobCriteria() <<endl;
+                temp = temp->getNext();
+            }
+        }
+    }
 };
 
-class JobHistory{
-public:
+////////////////////////////////////////  USER CERTIFICATES///////////////////////////////////////////
+class cNode{
 
+    string publisher;
+    string content;
+    double certificateId;
+    cNode* next;
+    cNode* prev;
+public:
+    cNode():publisher(""), content(""), certificateId(0){next=NULL;prev=NULL;}
+    cNode(string pub, string cont, double ID):publisher(pub), content(cont), certificateId(ID){next=NULL;prev=NULL;}
+
+    string getPublisher(){return publisher;}
+    string getContent(){return content;}
+    double getID(){return certificateId;}
+
+    void setNext(cNode* n){
+        next = n;
+    }
+    void setPrev(cNode* p){prev = p;}
+    cNode* getNext(){return next;}
+    cNode* getPrev(){return prev;}
 
 };
-
 class Certification{
-
+    cNode* head;
+    cNode* tail;
 public:
+    Certification(){head = NULL; tail= NULL;}
 
+    //Insertion in doubley Linked List
+    void addCertification(string publisher, string content, double postId){
+
+        cNode* certificate = new cNode(publisher, content, postId);
+
+        if(head == NULL){
+            head = certificate;
+            tail = certificate;
+        }
+        else{
+            tail->setNext(certificate);
+            certificate->setPrev(tail);
+            tail = certificate;
+        }   
+
+    }
+
+    void displayAllCertificates(){
+        if(head == NULL)
+            cout<<"User has uploaded No Certificate till Now!"<<endl;
+        else{
+
+            cNode* temp = head;
+            int i=0;
+            while(temp!= NULL){
+                i++;
+                cout<<"___________________________________________________________________________"<<endl;
+                cout<<i<<". "<<temp->getPublisher() <<endl<<endl;
+                cout<<"   "<<temp->getContent() <<endl;
+                temp = temp->getNext();
+            }
+        }
+    }
 };
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////USER POSTS///////////////////////////////////////////
 class pNode{
     string publisher;
     string content;
     double postId;
     pNode* next;
+    pNode* prev;
 public:
-    pNode():publisher(""), content(""), postId(0){next=NULL;}
-    pNode(string pub, string cont, double ID):publisher(pub), content(cont), postId(ID){next=NULL;}
+    pNode():publisher(""), content(""), postId(0){next=NULL;prev=NULL;}
+    pNode(string pub, string cont, double ID):publisher(pub), content(cont), postId(ID){next=NULL;prev=NULL;}
 
     string getPublisher(){return publisher;}
     string getContent(){return content;}
@@ -301,138 +432,57 @@ public:
     void setNext(pNode* n){
         next = n;
     }
+    void setPrev(pNode* p){prev = p;}
     pNode* getNext(){return next;}
+    pNode* getPrev(){return prev;}
 };
 class Posts{
-    pNode **postArray;
-    int size;
-    pNode* pn;
+
+    pNode* head;
+    pNode* tail;
     LinkedInPosts* linkPost;
 public:
-    Posts():size(0){}
-    Posts(int size): size(size){
-            //Filling empty array with NULL, just for Operational purpose
-        for(int i=0; i<size;i++){
-            postArray[i] = NULL;
-        }
-    }
-        int HashFunction(int key, int size){
-        return key%size;
-    }
+    Posts(){head = NULL; tail= NULL;}
+
+    //Insertion in doubley Linked List
     void createPost(string publisher, string content, double postId){
-        //rehashing occurs when size reaches to 85% of it self.
-        if(size == (size/100)*85)
-            size = size + ((size/100)*25);
-        
-        int hashIndex = HashFunction(postId, size);
-        pNode* temp = postArray[hashIndex];
-        if(temp == NULL)
-            temp = new pNode(publisher, content,  postId);
-        else{    
-            while(temp!= NULL)
-                temp = temp->getNext();
-            temp->setNext(new pNode(publisher, content,  postId));
+
+        pNode* post = new pNode(publisher, content, postId);
+
+        if(head == NULL){
+            head = post;
+            tail = post;
         }
+        else{
+            tail->setNext(post);
+            post->setPrev(tail);
+            tail = post;
+        }   
+
         linkPost->postToDatabase(publisher, content, postId);
     }
 
     void displayPosts(){
+        if(head == NULL)
+            cout<<"User has No Post Made till Now!"<<endl;
+        else{
 
+            pNode* temp = head;
+            int i=0;
+            while(temp!= NULL){
+                i++;
+                cout<<"___________________________________________________________________________"<<endl;
+                cout<<i<<". "<<temp->getPublisher() <<endl<<endl;
+                cout<<"   "<<temp->getContent() <<endl;
+                temp = temp->getNext();
+            }
+        }
     }
     
 };
-class UserProfile{
 
-public:
-    Message msg;
-    UserDetails user;
-    Certification certif;
-    Job job;
-    JobHistory jobHist;
-    Posts post;
-    LinkedInProfiles* linkedinProfiles; 
+/// ///////////////////////////////////////////////////////////////////////////////////////////
 
-    UserProfile(){}
-    UserProfile(string name, int age, char gender, string email, double userId) 
-                : user(name, age, gender, email, userId){}
-        // friend ostream& operator<<(ostream &out, const UserProfile &user) {}
-    void displayData()
-    {
-        cout<<" ___________________________________________________________________________________"<<endl;
-        cout<<"|  User Name : "<<endl;
-    }
-
-    void dashBoard(){
-
-    }
-
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class UserNode{
-    UserProfile userPro;
-    UserNode* next;
-public:
-    UserNode(): userPro(), next(NULL){}
-    UserNode(string name, int age, char gender, string email, double userId)
-        :userPro(name, age, gender, email, userId), next(NULL){}
-
-    UserProfile getUser(){
-        return userPro;
-    }
-    void setNext(UserNode* next){
-        this->next = next;
-    }
-    UserNode* getNext(){
-        return next;
-    }
-
-};
-
-class LinkedInProfiles{
-    UserNode **ProfileArr;
-    int size;
-public:
-    LinkedInProfiles(){}
-    LinkedInProfiles(int size): size(size){
-        //Filling empty array with NULL, just for Operational purpose
-        for(int i=0; i<size;i++){
-            ProfileArr[i] = NULL;
-        }
-    }
-
-    int HashFunction(int key, int size){
-        return key%size;
-    }
-
-    void createAccount(string name, int age, char gender, string email, double ID){
-
-        //rehashing occurs when size reaches to 85% of it self.
-        if(size == (size/100)*85)
-            size = size + ((size/100)*25);
-        
-        int hashIndex = HashFunction(ID, size);
-        UserNode* temp = ProfileArr[hashIndex];
-        if(temp == NULL)
-            temp = new UserNode(name, age, gender, email, ID);
-        else{    
-            while(temp!= NULL)
-                temp = temp->getNext();
-            temp->setNext(new UserNode(name, age, gender, email, ID));
-        }
-    }
-
-    UserNode* searchById(double ID){
-        return ProfileArr[0];
-    }
-
-    void searchByName(string name){
-
-    }
-
-};
-/////////////////////////////////////////////////////////////////////////////////////////////
 class postsNode{
     string publisher;
     string content;
@@ -498,7 +548,7 @@ public:
                 return required;
             }
             else
-                required->getNext();
+                required = required->getNext();
         }
 
         return NULL;
@@ -570,13 +620,67 @@ public:
                 return required;
             }
             else
-                required->getNext();
+                required = required->getNext();
         }
         return NULL;
     }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class UserProfile{
+
+public:
+    
+    Message msg;
+    UserDetails user;
+    Certification certif;
+    Job job;
+    Posts post;
+    LinkedInProfiles* linkedinProfiles; 
+
+    UserProfile(){}
+    UserProfile(string name, int age, char gender, string email, double userId) 
+                : user(name, age, gender, email, userId){}
+        // friend ostream& operator<<(ostream &out, const UserProfile &user)
+    void displayData(){
+         cout<<" ___________________________________________________________________________________"<<endl;
+        cout<<"|  User Name : "<<user.getName()<<endl;
+        cout<<"|  User Age : "<<user.getAge()<<endl;
+        cout<<"|  User ID : "<<user.getId()<<endl;
+        cout<<"|  User Gender : "<<user.getGender()<<endl;
+        cout<<"|  _________________________________________________________________________________"<<endl;
+
+    }
+    void dashBoard(){
+        cout<<" ___________________________________________________________________________________"<<endl;
+        cout<<"|  User Name : "<<user.getName()<<endl;
+        cout<<"|  User Age : "<<user.getAge()<<endl;
+        cout<<"|  User Email : "<<user.getEmail()<<endl;
+        cout<<"|  User ID : "<<user.getId()<<endl;
+        cout<<"|  User Gender : "<<user.getGender()<<endl;
+        cout<<"|  _________________________________________________________________________________"<<endl;
+        
+        cout<<"1. Inbox         | 2. Certificates        |  3. Posts           | 4. Exit "<<endl;
+        int choice =0;
+        cout<<"Select a tab or Press '4' to skips tab's data   : ";
+        if(choice == 1)
+            msg.ibox.displayAllMessages();
+        else if(choice == 2)
+            certif.displayAllCertificates();
+        else if(choice == 3)
+            post.displayPosts();
+        else
+            {
+                //Do nothing......
+            }
+    }
+
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 class LinkedIn{
 
     LinkedInProfiles* linkedinProfiles;
@@ -589,23 +693,119 @@ public:
     
     void login(double ID){
         UserNode* Status = linkedinProfiles->searchById(ID);
-        if(Status != NULL)
-            cerr<<"___________xxxx  User Not Found On LinkedIn   xxxx________"<<endl;
+        char choice;
+        if(Status != NULL){
+            cerr<<"_______________________________xxxx  User Not Found On LinkedIn   xxxx________"<<endl;
+            cout<<"Create A New Account (y/n) : ";
+            cin>>choice;
+            if(choice=='Y' || choice=='y'){
+                cout<<"____________________________________________________________________________"<<endl;
+                // string name, int age, char gender, string email, double ID
+                string name="";int age=0;char gender; string email=""; double ID=0;
+                cout<<"Enter Name : ";cin>>name;
+                cout<<"Enter Age  :";cin>>age;
+                cout<<"Enter Gender :";cin>>gender;
+                cout<<"Enter Email  :";cin>>email;
+                cout<<"Enter ID  :";cin>>ID;
+                linkedinProfiles->createAccount(name, age, gender, email, ID);
+            }
+            else{
+                cout<<"Exited............................"<<endl;
+            }
+
+        }
         else{
             //Copy Constructor is Called...........
             UserProfile LoggedIn = Status->getUser();
             LoggedIn.dashBoard();
         }
     }
-    
-    
+       
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class UserNode{
+
+    UserProfile userPro;
+    UserNode* next;
+public:
+    UserNode(): userPro(), next(NULL){}
+    UserNode(string name, int age, char gender, string email, double userId)
+        :userPro(name, age, gender, email, userId), next(NULL){}
+
+    UserProfile getUser(){
+        return userPro;
+    }
+    void setNext(UserNode* next){
+        this->next = next;
+    }
+    UserNode* getNext(){
+        return next;
+    }
+
+};
+
+class LinkedInProfiles{
+    UserNode **ProfileArr;
+    int size;
+public:
+    LinkedInProfiles(){}
+    LinkedInProfiles(int size): size(size){
+        //Filling empty array with NULL, just for Operational purpose
+        for(int i=0; i<size;i++){
+            ProfileArr[i] = NULL;
+        }
+    }
+
+    int HashFunction(int key, int size){
+        return key%size;
+    }
+
+    void createAccount(string name, int age, char gender, string email, double ID){
+
+        //rehashing occurs when size reaches to 85% of it self.
+        if(size == (size/100)*85)
+            size = size + ((size/100)*25);
+        
+        int hashIndex = HashFunction(ID, size);
+        UserNode* temp = ProfileArr[hashIndex];
+        if(temp == NULL)
+            temp = new UserNode(name, age, gender, email, ID);
+        else{    
+            while(temp!= NULL)
+                temp = temp->getNext();
+            temp->setNext(new UserNode(name, age, gender, email, ID));
+        }
+    }
+
+    UserNode* searchById(double ID){
+
+        UserNode* required = ProfileArr[int(ID)];
+
+        while(required != NULL){
+
+            UserProfile up = required->getUser();
+            if(up.user.getId() == ID){
+                return required;
+            }
+            else
+                required = required->getNext();
+        }
+
+        return NULL;
+    }
+
+    void searchByName(string name){
+
+    }
+
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(){
 
-    
+    //Opening Application............
 
     return 0;
 }
